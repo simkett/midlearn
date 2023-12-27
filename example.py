@@ -13,7 +13,7 @@ img_loader.load_image(f'{dirName}/dog_image.jpeg', 200, 200)
 
 # Create neural net
 network = NeuralNet()
-network.add_convolution_layer('sharpening')
+network.add_convolution_layer('sobel', 'relu')
 
 # Feed data to neural net
 network.load_data(img_loader.images_arr[0])
