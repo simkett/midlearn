@@ -14,11 +14,13 @@ conv_filters = {
 }
 
 # Activation functions
-def relu(x: int) -> int:
-    return np.maximum(0, x)
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-def tanh(x):
-    return np.tanh(x)
+def activation_func(x: int, func_name: str) -> int:
+    if func_name == 'relu':
+        return np.maximum(0, x)
+    if func_name == 'sigmoid':
+        return 1 / (1 + np.exp(-x))
+    if func_name == 'tanh':
+        return np.tanh(x)
+    if func_name == 'softmax':
+        e_x = np.exp(x - np.max(x))  # Subtracting the max value for numerical stability
+        return e_x / np.sum(e_x, axis=0)
