@@ -38,21 +38,22 @@ class ConvolutionLayer:
         self.filter_size = filter_size
         self.filter_stride = filter_stride
         self.activation_func_name = activation_func_name
-        self.filter = None  # np.ndarray
-        self.bias = None
+        self.filters = []  # list of np.ndarray
+        self.bias = []
         self.color_dimensions = num_color_dimensions
         self.initialize_filter_bias()
         self.output = None
 
     def initialize_filter_bias(self) -> None:
-        self.filter = np.random.randn(self.filter_size, self.filter_size)
-        self.bias = np.random.randn()
+        for i in range(self.n_filters):
+            self.filters.append(np.random.randn(self.filter_size, self.filter_size))
+            self.bias.append(np.random.randn())
 
-    def convolution(self, image_arr: np.ndarray) -> np.ndarray:
+    def convolution(self, image_arr: np.ndarray, filter_no: int) -> np.ndarray:
         convolution_layers_lst = []
         for image_dimension in image_arr:  # Convolution for every color dimension (e.g. RGB)
             image_dimension = image_dimension[::self.filter_stride, ::self.filter_stride]
-            convolution_layers_lst.append(signal.convolve2d(image_dimension, self.filter, mode='same')+self.bias) # Here: Same filter for all channels
+            convolution_layers_lst.append(signal.convolve2d(image_dimension, self.filters[filter_no], mode='same')+self.bias[filter_no]) # Here: Same filter for all channels
         sum_conv_layers = np.sum(convolution_layers_lst, axis=0)
         return sum_conv_layers
     
@@ -63,7 +64,7 @@ class ConvolutionLayer:
     def run(self, input_data: np.ndarray) -> np.ndarray:
         output = []
         for i in range(self.n_filters):
-            conv_image = self.convolution(input_data)
+            conv_image = self.convolution(input_data, i)
             conv_image = self.apply_activation_func(conv_image)
             output.append(conv_image)
         output = np.array(output)
@@ -125,4 +126,5 @@ class FullyConnectedLayer:
         if not self.weights:
             self.initialize_weights_bias(input_data.shape)
         self.output = np.dot(input_data, self.weights) + self.bias
+        print(self.output)
         return self.output
