@@ -11,6 +11,7 @@ class CNN:
         self.color_dimensions = color_dimensions
         self.input_data = None
         self.layers = []
+        self.outputs = []
 
     def load_data(self, data: np.ndarray) -> None:
         self.input_data = data
@@ -21,14 +22,22 @@ class CNN:
     def add_pooling_layer(self, pooling_option: str, pool_size: int=2, flatten: bool=False) -> None:
         self.layers.append(PoolingLayer(pooling_option, pool_size, flatten))
 
-    def add_fully_connected_layer(self, size: int=None) -> None:
-        self.layers.append(FullyConnectedLayer(size))
+    def add_fully_connected_layer(self, activation_func_name: str, size: int=None) -> None:
+        self.layers.append(FullyConnectedLayer(activation_func_name, size))
 
     def run_network(self) -> None:
         data_layer = self.input_data   # Input data of first layer is input data of whole network
         for layer in self.layers:
             data_layer = layer.run(data_layer)
-            print(f'   {type(layer)} --> {data_layer.shape}')
+        self.outputs.append(data_layer)
+        print(data_layer)   # Daten der Output-Layer
+    
+    def run_network_backwards(self) -> None:
+        None
+
+    def categorical_cross_entropy(prediction, labels) -> float:
+        None
+
 
 
 
@@ -70,6 +79,9 @@ class ConvolutionLayer:
         output = np.array(output)
         self.output = output
         return output
+    
+    def run_backwards(self) -> None:
+        None
 
 
 
@@ -103,10 +115,14 @@ class PoolingLayer:
         self.output = output
         return output
     
+    def run_backwards(self) -> None:
+        None
+    
 
 
 class FullyConnectedLayer:
-    def __init__(self, size: int):
+    def __init__(self, activation_func_name: str, size: int):
+        self.activation_func_name = activation_func_name
         self.size = size
         self.weights = None # weight matrix (2D)
         self.bias = None    # bias vector (1D)
@@ -122,9 +138,18 @@ class FullyConnectedLayer:
 
         self.bias = np.random.randn(1, n_neurons_output)
 
+    def apply_activation_func(self, image_arr: np.ndarray) -> np.ndarray:
+        image_arr = const.activation_func(image_arr, self.activation_func_name)
+        return image_arr
+
     def run(self, input_data: np.ndarray) -> np.ndarray:
         if not self.weights:
             self.initialize_weights_bias(input_data.shape)
-        self.output = np.dot(input_data, self.weights) + self.bias
-        print(self.output)
-        return self.output
+        
+        calc_image = np.dot(input_data, self.weights) + self.bias
+        calc_image = self.apply_activation_func(calc_image)
+        self.output = calc_image
+        return calc_image
+    
+    def run_backwards(self) -> None:
+        None
